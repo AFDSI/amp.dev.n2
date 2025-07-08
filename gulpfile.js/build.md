@@ -1,3 +1,4 @@
+```javascript
 'use strict';
 
 const gulp = require('gulp');
@@ -791,3 +792,4 @@ exports.build = gulp.series(
 );
 
 exports.buildForGrowTests = gulp.series(buildBoilerplate, buildPages);
+```
