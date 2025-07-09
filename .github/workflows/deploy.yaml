@@ -15,7 +15,7 @@ on:
         default: Staging
   push:
     branches:
-      - 'main'
+      - 'main' # Assuming 'main' is your primary branch for amp.dev.next2
       - 'gha-deploy-*'
 
 jobs:
@@ -32,7 +32,10 @@ jobs:
           skip_after_successful_duplicate: true
           paths_ignore: '["**/README.md", "**/docs/**"]'
           do_not_skip: '["workflow_dispatch", "schedule"]'
+  
   verify:
+    # This job needs prepare and will use its output.
+    needs: prepare # Correct dependency: runs after prepare
     runs-on: ubuntu-latest
     steps:
       - name: Cloning repository
@@ -41,11 +44,38 @@ jobs:
       - name: Setting up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22 # Node.js 22 as per package.json
           cache: npm
 
       - name: Installing Node.js packages
         run: npm ci
+
+      # --- DEBUG STEP: Print github.run_id for artifact download ---
+      - name: Print github.run_id for artifact download
+        run: echo "Attempting to download artifact with run-id: ${{ github.run_id }}"
+      # -----------------------------------------------------------
+
+      - name: Fetching build artifacts for tests
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.prepare.outputs.artifact_name }} # Use output from prepare job
+          path: artifacts # Download to a temporary 'artifacts' directory
+          run-id: ${{ github.run_id }} # Explicitly specify the current workflow run ID
+
+      # --- DEBUG STEP: List downloaded artifacts ---
+      - name: List downloaded artifacts
+        run: ls -R artifacts
+      # ---------------------------------------------
+
+      - name: Unpacking artifacts for tests
+        run: |
+          tar xf artifacts/build-setup/setup.tar.gz -C . # Unpack the tarball from artifacts/build-setup into the current directory
+          rm -rf artifacts # Clean up the downloaded artifact directory
+
+      # --- DEBUG STEP: List dist directory after unpacking ---
+      - name: List dist directory after unpacking
+        run: ls -R dist
+      # -----------------------------------------------------
 
       - name: Running tests
         run: |
@@ -53,10 +83,12 @@ jobs:
           npx gulp lintNode
           npx gulp lintYaml
           npm run test:platform
-          npm run test:playground
+          # npm run test:playground # Partitioned: playground is a testing environment specific to `ampproject`
+
   prepare:
-    needs: verify
     runs-on: ubuntu-latest
+    outputs: # Define output for artifact name
+      artifact_name: build-setup # Output the artifact name
     steps:
       - name: Cloning repository
         uses: actions/checkout@v4
@@ -64,11 +96,21 @@ jobs:
       - name: Setting up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22 # Node.js 22 as per package.json
           cache: npm
 
       - name: Installing Node.js packages
         run: npm ci
+
+      - name: Cache GitHub Importer data
+        uses: actions/cache@v4
+        with:
+          path: |
+            platform/cache # This is a common cache directory for amp.dev's importer
+            platform/tmp   # Another potential cache/temp directory
+          key: ${{ runner.os }}-importer-cache-${{ hashFiles('package.json') }} # Use package.json for cache key
+          restore-keys: |
+            ${{ runner.os }}-importer-cache-
 
       - name: Preparing build
         env:
@@ -77,35 +119,45 @@ jobs:
         run: |
           npx gulp buildPrepare
 
+      # --- DEBUG STEP: List dist/static/samples after buildPrepare ---
+      - name: List dist/static/samples after buildPrepare
+        run: ls -R dist/static/samples/
+      # -------------------------------------------------------------
+
       - name: Storing build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-setup
           path: artifacts/setup.tar.gz
 
+      # --- DEBUG STEP: List artifacts directory after upload ---
+      - name: List artifacts directory after upload
+        run: ls -R artifacts/
+      # -------------------------------------------------------
+
   build:
     env:
       APP_ENV: production
-    needs: prepare
+    needs: prepare # Correctly depends on prepare
     strategy:
       matrix:
         language:
           [
             'en',
-            'de',
+            # 'de', # Non-essential locale, partitioned
             'fr',
-            'ar',
+            # 'ar', # Non-essential locale, partitioned
             'es',
-            'it',
-            'id',
-            'ja',
-            'ko',
+            # 'it', # Non-essential locale, partitioned
+            # 'id', # Non-essential locale, partitioned
+            # 'ja', # Non-essential locale, partitioned
+            # 'ko', # Non-essential locale, partitioned
             'pt_BR',
-            'ru',
-            'tr',
-            'zh_CN',
-            'pl',
-            'vi',
+            # 'ru', # Non-essential locale, partitioned
+            # 'tr', # Non-essential locale, partitioned
+            # 'zh_CN', # Non-essential locale, partitioned
+            # 'pl', # Non-essential locale, partitioned
+            # 'vi', # Non-essential locale, partitioned
           ]
     runs-on: ubuntu-latest
     steps:
@@ -115,7 +167,7 @@ jobs:
       - name: Setting up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22 # Node.js 22
           cache: npm
 
       - name: Installing Node.js packages
@@ -157,7 +209,7 @@ jobs:
     environment: Production
     env:
       APP_ENV: production
-      NETLIFY_DEPLOY_TOKEN: ${{ secrets.NETLIFY_DEPLOY_TOKEN }}
+      # NETLIFY_DEPLOY_TOKEN: ${{ secrets.NETLIFY_DEPLOY_TOKEN }} # Commented out from env block as it's passed directly
     steps:
       - name: Cloning repository
         uses: actions/checkout@v4
@@ -165,7 +217,7 @@ jobs:
       - name: Setting up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22 # Node.js 22
           cache: npm
 
       - name: Installing Node.js packages
@@ -188,4 +240,6 @@ jobs:
         env:
           DEPLOY_ENVIRONMENT: ${{ inputs.deploy-environment || 'Staging' }}
         run: |
-          npx gulp staticDeploy
+          # Explicitly use Netlify CLI with your specific Site ID
+          NETLIFY_AUTH_TOKEN=${{ secrets.NETLIFY_DEPLOY_TOKEN }} npx netlify deploy --prod --site 69bbcc85-2aad-4a49-be6f-b6caef14bf1a --dir /home/runner/work/amp.dev.n2/amp.dev.n2/dist/pages
+          # Ensure that /home/runner/work/amp.dev.n2/amp.dev.n2/dist/pages is the correct build output directory.

@@ -1,3 +1,19 @@
+/**
+ * Copyright 2018 The AMP HTML Authors. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS-IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 const express = require('express');
@@ -10,9 +26,9 @@ const subdomain = require('./middleware/subdomain.js');
 const webSocketServer = require('@examples/socket-server/socket-server');
 
 const routers = {
-  boilerplate: require('../../boilerplate/backend/'), // Essential
-  cspReport: require('@lib/routers/cspReport.js'), // Essential
-  example: { // Essential (example router components are part of core functionality)
+  boilerplate: require('../../boilerplate/backend/'),
+  cspReport: require('@lib/routers/cspReport.js'),
+  example: {
     api: require('@examples'),
     embeds: require('@lib/routers/example/embeds.js'),
     sources: require('@lib/routers/example/sources.js'),
@@ -20,22 +36,22 @@ const routers = {
     experiments: require('@lib/routers/example/experiments.js'),
     inline: require('@lib/routers/inlineExamples.js'),
   },
-  go: require('@lib/routers/go.js'), // Essential
-  growPages: require('@lib/routers/growPages.js').growPages, // Essential
-  growSharedPages: require('@lib/routers/growSharedPages.js'), // Essential
-  growXmls: require('@lib/routers/growXmls.js'), // Essential
-  healthCheck: require('@lib/routers/healthCheck.js').router, // Essential
-  log: require('@lib/routers/runtimeLog.js'), // Essential
-  notFound: require('@lib/routers/notFound.js'), // Essential
-  // packager: require('@lib/routers/packager.js'), // Partitioned: packager is non-essential
-  // pixi: require('../../pixi/backend/'), // Partitioned: pixi is non-essential
-  // playground: require('../../playground/backend/'), // Partitioned: playground is non-essential
-  search: require('@lib/routers/search.js'), // Essential (though search functionality will be separate project, router is basic)
-  static: require('@lib/routers/static.js'), // Essential
-  // survey: require('@lib/routers/surveyComponent.js'), // Partitioned: survey is non-essential
-  // templates: require('@lib/routers/templates.js'), // Partitioned: templates router is non-essential
-  // thumbor: require('@lib/routers/thumbor.js').thumborRouter, // Partitioned: thumbor is non-essential
-  whoAmI: require('@lib/routers/whoAmI.js'), // Essential
+  go: require('@lib/routers/go.js'),
+  growPages: require('@lib/routers/growPages.js').growPages,
+  growSharedPages: require('@lib/routers/growSharedPages.js'),
+  growXmls: require('@lib/routers/growXmls.js'),
+  healthCheck: require('@lib/routers/healthCheck.js').router,
+  log: require('@lib/routers/runtimeLog.js'),
+  notFound: require('@lib/routers/notFound.js'),
+  // packager: require('@lib/routers/packager.js'),
+  pixi: require('../../pixi/backend/'),
+  playground: require('../../playground/backend/'),
+  search: require('@lib/routers/search.js'),
+  static: require('@lib/routers/static.js'),
+  survey: require('@lib/routers/surveyComponent.js'),
+  templates: require('@lib/routers/templates.js'),
+  thumbor: require('@lib/routers/thumbor.js').thumborRouter,
+  whoAmI: require('@lib/routers/whoAmI.js'),
 };
 
 const HOST = config.hosts.platform.base;
@@ -86,7 +102,7 @@ class Platform {
     this._configureErrorHandlers();
   }
 
-  _configureMiddlewares() { // Essential
+  _configureMiddlewares() {
     this.server.use(require('./middleware/csp.js'));
     this.server.use(require('./middleware/security.js'));
     this.server.use(require('./middleware/redirects.js'));
@@ -128,53 +144,52 @@ class Platform {
   }
 
   async _configureSubdomains() {
-    // Partitioned routers removed from here: playground, go, log, preview
-    // These were handled implicitly by their `routers.<name>` definition.
-    // Explicitly commenting here to align with strategy.
-    // this.server.use(await subdomain.map(config.hosts.playground, routers.playground));
-    // this.server.use(await subdomain.map(config.hosts.go, routers.go));
-    // this.server.use(await subdomain.map(config.hosts.log, routers.log));
-    // this.server.use(
-    //   await subdomain.map(
-    //     config.hosts.preview,
-    //     express
-    //       .Router() // eslint-disable-line new-cap
-    //       .use([
-    //         routers.example.api,
-    //         routers.example.static,
-    //         routers.example.embeds,
-    //         routers.example.sources,
-    //         routers.example.experiments,
-    //         routers.example.inline,
-    //       ])
-    //   )
-    // );
+    this.server.use(
+      await subdomain.map(config.hosts.playground, routers.playground)
+    );
+    this.server.use(await subdomain.map(config.hosts.go, routers.go));
+    this.server.use(await subdomain.map(config.hosts.log, routers.log));
+    this.server.use(
+      await subdomain.map(
+        config.hosts.preview,
+        express
+          .Router() // eslint-disable-line new-cap
+          .use([
+            routers.example.api,
+            routers.example.static,
+            routers.example.embeds,
+            routers.example.sources,
+            routers.example.experiments,
+            routers.example.inline,
+          ])
+      )
+    );
   }
 
   _configureRouters() {
-    this.server.use(routers.cspReport); // Essential
+    this.server.use(routers.cspReport);
     // Disable packager until we have a better way to manage our certs
-    // this.server.use(routers.packager); // Partitioned: packager
-    // this.server.use(routers.thumbor); // Partitioned: thumbor
-    this.server.use(routers.whoAmI); // Essential
-    this.server.use(routers.healthCheck); // Essential
-    this.server.use(routers.example.api); // Essential
-    // this.server.use(routers.pixi); // Partitioned: pixi
-    // this.server.use(routers.survey); // Partitioned: survey
-    this.server.use(routers.search); // Essential
-    this.server.use(routers.boilerplate); // Essential
-    this.server.use(routers.static); // Essential
-    // this.server.use(routers.templates); // Partitioned: templates router
+    // this.server.use(routers.packager);
+    this.server.use(routers.thumbor);
+    this.server.use(routers.whoAmI);
+    this.server.use(routers.healthCheck);
+    this.server.use(routers.example.api);
+    this.server.use(routers.pixi);
+    this.server.use(routers.survey);
+    this.server.use(routers.search);
+    this.server.use(routers.boilerplate);
+    this.server.use(routers.static);
+    this.server.use(routers.templates);
     // XMLs rendered by Grow as well as all pages located under /shared
     // are need to be served by specialized routers instead of the generic one.
     // Therefore register them first
-    this.server.use(routers.growSharedPages); // Essential
-    this.server.use(routers.growXmls); // Essential
+    this.server.use(routers.growSharedPages);
+    this.server.use(routers.growXmls);
     // Register the following router at last as it works as a catch-all
-    this.server.use(routers.growPages); // Essential
+    this.server.use(routers.growPages);
   }
 
-  _configureErrorHandlers() { // Essential
+  _configureErrorHandlers() {
     // handle errors
     // eslint-disable-next-line no-unused-vars
     this.server.use((err, req, res, next) => {
@@ -184,7 +199,7 @@ class Platform {
       }
     });
     // handle 404s
-    this.server.use(routers.notFound); // Essential
+    this.server.use(routers.notFound);
   }
 }
 

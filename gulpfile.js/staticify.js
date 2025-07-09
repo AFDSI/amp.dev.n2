@@ -1,19 +1,3 @@
-/**
- * Copyright 2019 The AMP HTML Authors. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS-IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 'use strict';
 
 const Cheerio = require('cheerio');
@@ -24,23 +8,23 @@ const nunjucks = require('nunjucks');
 const through = require('through2');
 const {htmlContent} = require('@lib/utils/cheerioHelper');
 const {project} = require('@lib/utils');
-const {survey} = require('@lib/templates/SurveyFilter.js');
-const {importBlog} = require('@lib/templates/ImportBlogFilter.js');
-const {
-  importYouTubeChannel,
-} = require('@lib/templates/ImportYouTubeChannel.js');
-const {
+// const {survey} = require('@lib/templates/SurveyFilter.js'); // Partitioned: survey
+// const {importBlog} = require('@lib/templates/ImportBlogFilter.js'); // Partitioned: importBlog
+// const { // Partitioned: importYouTubeChannel
+//   importYouTubeChannel,
+// } = require('@lib/templates/ImportYouTubeChannel.js');
+const { // Essential
   SupportedFormatsExtension,
 } = require('@lib/templates/SupportedFormatsExtension.js');
-const {
+const { // Essential
   FORMAT_WEBSITES,
   SUPPORTED_FORMATS,
 } = require('@lib/amp/formatHelper.js');
-const {cheerioOptions} = require('../platform/lib/common/cheerioOptions');
-const coursesPath = '/documentation/courses';
-const coursesRegex = new RegExp(`^(.+)(?:${coursesPath})(.*)$`);
+const {cheerioOptions} = require('../platform/lib/common/cheerioOptions'); // Essential
+const coursesPath = '/documentation/courses'; // Essential
+const coursesRegex = new RegExp(`^(.+)(?:${coursesPath})(.*)$`); // Essential
 
-const getUpdatedURL = (u, requestedFormat, forcedFormat) => {
+const getUpdatedURL = (u, requestedFormat, forcedFormat) => { // Essential
   return u.replace(
     /(.*documentation\/[^/]+)[\/.]([^?]+)?(?:\?(?:[^=]*)=(.*))?/,
     (match, section, page, embeddedQueryFormat) => {
@@ -59,7 +43,7 @@ const getUpdatedURL = (u, requestedFormat, forcedFormat) => {
  * creates a new nunjucks environment for rendering
  *
  */
-function nunjucksEnv() {
+function nunjucksEnv() { // Essential (but filters/extensions might be partitioned)
   const env = new nunjucks.Environment(null, {
     tags: {
       blockStart: '[%',
@@ -75,10 +59,9 @@ function nunjucksEnv() {
     'SupportedFormatsExtension',
     new SupportedFormatsExtension()
   );
-  env.addFilter('importBlog', importBlog, true);
-
-  env.addFilter('importYouTubeChannel', importYouTubeChannel, true);
-  env.addFilter('survey', survey, true);
+  // env.addFilter('importBlog', importBlog, true); // Partitioned: importBlog
+  // env.addFilter('importYouTubeChannel', importYouTubeChannel, true); // Partitioned: importYouTubeChannel
+  // env.addFilter('survey', survey, true); // Partitioned: survey
 
   return env;
 }
@@ -88,17 +71,17 @@ function nunjucksEnv() {
  *
  * @return {Promise}
  */
-async function staticify(done) {
-  const logger = require('@lib/utils/log')('Static File Generator');
+async function staticify(done) { // Essential
+  const logger = require('@lib/utils/log')('Static File Generator'); // Essential
 
-  const requestPathRegex = new RegExp(
+  const requestPathRegex = new RegExp( // Essential
     `${project.paths.PAGES_DEST}|(index)?.html`,
     'g'
   );
 
-  const generatedFormats = SUPPORTED_FORMATS.map((format) => {
+  const generatedFormats = SUPPORTED_FORMATS.map((format) => { // Essential
     const f = (cb) => {
-      const env = nunjucksEnv();
+      const env = nunjucksEnv(); // Essential
 
       return gulp
         .src(`${project.paths.PAGES_DEST}/**/*html`)
@@ -178,9 +161,10 @@ async function staticify(done) {
     return f;
   });
 
-  const generatedLevels = ['beginner', 'advanced'].map((level) => {
+  // generatedLevels relies on coursesPath, which is essential
+  const generatedLevels = ['beginner', 'advanced'].map((level) => { // Essential
     const f = (cb) => {
-      const env = nunjucksEnv();
+      const env = nunjucksEnv(); // Essential
 
       return gulp
         .src(`${project.paths.PAGES_DEST}${coursesPath}/**/*.html`)
@@ -268,7 +252,8 @@ async function staticify(done) {
     return f;
   });
 
-  await gulp
+  // Search-promoted pages is part of search, which is essential
+  await gulp // Essential
     .src(`${project.paths.STATICS_DEST}/files/search-promoted-pages/*json`)
     .pipe(
       through.obj((file, encoding, callback) => {
@@ -295,7 +280,7 @@ async function staticify(done) {
     )
     .pipe(gulp.dest(() => `${project.paths.PAGES_DEST}/search/highlights/`));
 
-  await gulp
+  await gulp // Essential
     .src([
       project.absolute('pages/static/**/*'),
       project.absolute('examples/static/**/*'),
@@ -303,11 +288,11 @@ async function staticify(done) {
     ])
     .pipe(gulp.dest(`${project.paths.PAGES_DEST}/static`));
 
-  await gulp
+  await gulp // Essential
     .src(`${project.paths.STATICS_DEST}/**/*`)
     .pipe(gulp.dest(() => `${project.paths.PAGES_DEST}/static`));
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => { // Essential
     gulp.series(
       gulp.parallel(...generatedLevels),
       gulp.parallel(...generatedFormats),
@@ -320,4 +305,4 @@ async function staticify(done) {
   });
 }
 
-exports.staticify = staticify;
+exports.staticify = staticify; // Essential

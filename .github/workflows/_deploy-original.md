@@ -1,4 +1,4 @@
----
+```yaml
 name: Deploy
 run-name: Deploy to ${{ inputs.deploy-environment || 'Staging' }}
 
@@ -189,3 +189,4 @@ jobs:
           DEPLOY_ENVIRONMENT: ${{ inputs.deploy-environment || 'Staging' }}
         run: |
           npx gulp staticDeploy
+```

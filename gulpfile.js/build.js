@@ -12,33 +12,33 @@ const path = require('path');
 const through = require('through2');
 const archiver = require('archiver');
 const yaml = require('js-yaml');
-const {samplesBuilder} = require('@lib/build/samplesBuilder');
+// const {samplesBuilder} = require('@lib/build/samplesBuilder'); // Non-essential: samplesBuilder
 const {project} = require('@lib/utils');
 const git = require('@lib/utils/git');
-const ComponentReferenceImporter = require('@lib/pipeline/componentReferenceImporter');
-const SpecImporter = require('@lib/pipeline/specImporter');
-const RecentGuides = require('@lib/pipeline/recentGuides');
+// const ComponentReferenceImporter = require('@lib/pipeline/componentReferenceImporter'); // Non-essential: ComponentReferenceImporter
+// const SpecImporter = require('@lib/pipeline/specImporter'); // Non-essential: SpecImporter
+// const RecentGuides = require('@lib/pipeline/recentGuides'); // Non-essential: RecentGuides
 const gulpSass = require('gulp-sass')(require('sass'));
-const importRoadmap = require('./import/importRoadmap.js');
-const importWorkingGroups = require('./import/importWorkingGroups.js');
+// const importRoadmap = require('./import/importRoadmap.js'); // Non-essential: importRoadmap
+// const importWorkingGroups = require('./import/importWorkingGroups.js'); // Non-essential: importWorkingGroups
 const {staticify} = require('./staticify.js');
 const {whoAmI} = require('./whoAmI.js');
-const importAdVendorList = require('./import/importAdVendorList.js');
-const {thumborImageIndex} = require('./thumbor.js');
+// const importAdVendorList = require('./import/importAdVendorList.js'); // Non-essential: importAdVendorList
+// const {thumborImageIndex} = require('./thumbor.js'); // Non-essential: thumborImageIndex
 const CleanCSS = require('clean-css');
-const {PIXI_CLOUD_ROOT} = require('@lib/utils/project').paths;
+// const {PIXI_CLOUD_ROOT} = require('@lib/utils/project').paths; // Non-essential: PIXI_CLOUD_ROOT
 const {copyFile} = require('fs/promises');
 const nunjucks = require('nunjucks');
-const {importBlog} = require('@lib/templates/ImportBlogFilter.js');
-const {
-  importYouTubeChannel,
-} = require('@lib/templates/ImportYouTubeChannel.js');
-const {survey} = require('@lib/templates/SurveyFilter.js');
-const {
+// const {importBlog} = require('@lib/templates/ImportBlogFilter.js'); // Non-essential: importBlog
+// const { // Non-essential: importYouTubeChannel
+//   importYouTubeChannel,
+// } = require('@lib/templates/ImportYouTubeChannel.js');
+// const {survey} = require('@lib/templates/SurveyFilter.js'); // Non-essential: survey
+const { // Essential
   SupportedFormatsExtension,
 } = require('@lib/templates/SupportedFormatsExtension.js');
-const {optimize} = require('@lib/utils/ampOptimizer.js');
-const toml = require('@iarna/toml');
+const {optimize} = require('@lib/utils/ampOptimizer.js'); // Essential
+const toml = require('@iarna/toml'); // Essential
 
 // Path of the grow test pages for filtering in the grow podspec.yaml
 const TEST_CONTENT_PATH_REGEX = '^/tests/';
@@ -74,13 +74,14 @@ function clean() {
       project.absolute('pages/.depcache.json'),
       project.absolute('pages/podspec.yaml'),
 
-      project.absolute('examples/static/samples/samples.json'),
+      // project.absolute('examples/static/samples/samples.json'), // Partitioned: samplesBuilder
+      // project.absolute('playground/dist'), // Partitioned: playground
 
       project.paths.GROW_BUILD_DEST,
       project.paths.STATICS_DEST,
       project.absolute('platform/static'),
+      // project.absolute('playground/dist'), // Partitioned: playground - already handled above in del
 
-      project.absolute('playground/dist'),
     ],
     {'force': true}
   );
@@ -146,50 +147,50 @@ function buildFrontend(done) {
  * Builds the playground
  * @return {Promise}
  */
-async function buildPlayground() {
-  await sh('mkdir -p playground/dist');
-  await sh('npm run build:playground');
-
-  await gulp
-    .src(project.absolute('netlify/configs/preview.amp.dev/netlify.toml'))
-    .pipe(gulp.dest(`${project.paths.DIST}/examples`));
-
-  await gulp
-    .src([project.absolute('pages/static/**/*')])
-    .pipe(gulp.dest(`${project.paths.DIST}/playground/static`));
-
-  await gulp
-    .src(project.absolute('playground/dist/**/*'))
-    .pipe(gulp.dest(`${project.paths.DIST}/playground`));
-
-  return await gulp
-    .src(project.absolute('netlify/configs/playground.amp.dev/netlify.toml'))
-    .pipe(gulp.dest(`${project.paths.DIST}/playground`));
-}
+// async function buildPlayground() { // Non-essential: playground
+//   await sh('mkdir -p playground/dist');
+//   await sh('npm run build:playground');
+//
+//   await gulp
+//     .src(project.absolute('netlify/configs/preview.amp.dev/netlify.toml'))
+//     .pipe(gulp.dest(`${project.paths.DIST}/examples`));
+//
+//   await gulp
+//     .src([project.absolute('pages/static/**/*')])
+//     .pipe(gulp.dest(`${project.paths.DIST}/playground/static`));
+//
+//   await gulp
+//     .src(project.absolute('playground/dist/**/*'))
+//     .pipe(gulp.dest(`${project.paths.DIST}/playground`));
+//
+//   return await gulp
+//     .src(project.absolute('netlify/configs/playground.amp.dev/netlify.toml'))
+//     .pipe(gulp.dest(`${project.paths.DIST}/playground`));
+// }
 
 /**
  * Builds Pixi
  * @return {Promise}
  */
-async function buildPixi() {
-  await sh('mkdir -p pixi/dist');
-  return sh('npm run build:pixi');
-}
+// async function buildPixi() { // Non-essential: pixi
+//   await sh('mkdir -p pixi/dist');
+//   return sh('npm run build:pixi');
+// }
 
 /**
  * Builds the pixi cloud functions project
  */
-function buildPixiFunctions() {
-  return sh('npm install', {
-    workingDir: PIXI_CLOUD_ROOT,
-  });
-}
+// function buildPixiFunctions() { // Non-essential: pixiFunctions
+//   return sh('npm install', {
+//     workingDir: PIXI_CLOUD_ROOT,
+//   });
+// }
 
 /**
  * Builds the boilerplate generator
  * @return {Promise}
  */
-function buildBoilerplate() {
+function buildBoilerplate() { // Essential
   return sh('node build.js', {
     workingDir: project.absolute('boilerplate'),
   });
@@ -201,14 +202,14 @@ function buildBoilerplate() {
  *
  * @return {Promise}
  */
-function buildSamples() {
-  return samplesBuilder.build();
-}
+// function buildSamples() { // Non-essential: samplesBuilder
+//   return samplesBuilder.build();
+// }
 
 /**
  * Zips templates for download.
  */
-function zipTemplates() {
+function zipTemplates() { // Essential
   const templateDir = path.join(project.paths.DIST, 'static/files/templates/');
   mkdirp(templateDir);
   return gulp.src(project.paths.TEMPLATES + '/*/*/').pipe(
@@ -239,14 +240,14 @@ function zipTemplates() {
  *
  * @return {Promise}
  */
-function importAll() {
+function importAll() { // Essential (but calls will be partitioned)
   return Promise.all([
-    new ComponentReferenceImporter().import(),
-    new SpecImporter().import(),
-    new RecentGuides().import(),
-    importRoadmap.importRoadmap(),
-    importWorkingGroups.importWorkingGroups(),
-    importAdVendorList.importAdVendorList(),
+    // new ComponentReferenceImporter().import(), // Non-essential: ComponentReferenceImporter
+    // new SpecImporter().import(), // Non-essential: SpecImporter
+    // new RecentGuides().import(), // Non-essential: RecentGuides (from the list in reqs)
+    // importRoadmap.importRoadmap(), // Non-essential: importRoadmap
+    // importWorkingGroups.importWorkingGroups(), // Non-essential: importWorkingGroups
+    // importAdVendorList.importAdVendorList(), // Non-essential: importAdVendorList
   ]);
 }
 
@@ -255,9 +256,9 @@ function importAll() {
  *
  * @return {Promise}
  */
-function importComponents() {
-  return new ComponentReferenceImporter().import();
-}
+// function importComponents() { // Non-essential (no longer used by importAll)
+//   return new ComponentReferenceImporter().import();
+// }
 
 /**
  * Builds playground and boilerplate generator, imports all remote documents,
@@ -265,42 +266,50 @@ function importComponents() {
  *
  * @return {undefined}
  */
-function buildPrepare(done) {
+function buildPrepare(done) { // Essential
   return gulp.series(
     // Build playground and boilerplate that early in the flow as they are
     // fairly quick to build and would be annoying to eventually fail downstream
-    buildSamples,
+    // buildSamples, // Non-essential: samplesBuilder
+    // --- ADDED STEP: Copy samples.json to expected location --- (Dependent on buildSamples, so comment out)
+    // async function copySamplesJson() {
+      // const sourcePath = project.absolute('examples/static/samples/samples.json');
+      // const destPath = path.join(project.paths.STATICS_DEST, 'samples/samples.json');
+      // await mkdirp(path.dirname(destPath)); // Ensure destination directory exists
+      // await copyFile(sourcePath, destPath);
+      // signale.success(`Copied samples.json from ${sourcePath} to ${destPath}`);
+    // },
     gulp.parallel(
-      buildPlayground,
-      buildBoilerplate,
-      // buildPixi,
-      buildFrontend21,
-      importAll,
-      zipTemplates
+      // buildPlayground, // Non-essential: playground
+      buildBoilerplate, // Essential
+      // buildPixi, // Non-essential: pixi
+      buildFrontend21, // Essential
+      importAll, // Essential (but its internal calls are partitioned)
+      zipTemplates // Essential
     ),
-    // eslint-disable-next-line prefer-arrow-callback
-    async function packArtifacts() {
+    async function packArtifacts() { // Essential
       // Store everything built so far for later stages to pick up
       // Local path to the archive containing artifacts of the first stage
       const SETUP_ARCHIVE = 'artifacts/setup.tar.gz';
       // All paths that contain altered files at build setup time
+      // eslint-disable-next-line no-unused-vars
       const SETUP_STORED_PATHS = [
         './pages/content/',
         './pages/shared/',
         './dist/',
         './boilerplate/lib/',
         './boilerplate/dist/',
-        './playground/dist/',
+        // './playground/dist/', // Non-essential
         './frontend21/dist/',
         './.cache/',
-        './examples/static/samples/samples.json',
+        // './examples/static/samples/samples.json', // Partitioned: samplesBuilder
       ];
 
-      await sh('mkdir -p artifacts');
+      await sh(`mkdir -p artifacts`);
       await sh(`tar cfj ${SETUP_ARCHIVE} ${SETUP_STORED_PATHS.join(' ')}`);
     },
     // eslint-disable-next-line prefer-arrow-callback
-    function exit(_done) {
+    function exit(_done) { // Essential (used by gulp.series)
       done();
       _done();
       process.exit(0);
@@ -313,7 +322,7 @@ function buildPrepare(done) {
  *
  * @return {Promise}
  */
-function unpackArtifacts() {
+function unpackArtifacts() { // Essential
   let stream = gulp.src(['artifacts/**/*.tar.gz', 'artifacts/**/*.zip'], {
     'read': false,
   });
@@ -336,12 +345,12 @@ function unpackArtifacts() {
  *
  * @return {Promise}
  */
-function buildPages(done) {
+function buildPages(done) { // Essential
   return gulp.series(
-    unpackArtifacts,
-    buildFrontend,
+    unpackArtifacts, // Essential
+    buildFrontend, // Essential
     // eslint-disable-next-line prefer-arrow-callback
-    async function buildGrow() {
+    async function buildGrow() { // Essential (core Grow build)
       const options = {};
       if (config.isTestMode()) {
         options.include_paths = TEST_CONTENT_PATH_REGEX;
@@ -354,9 +363,9 @@ function buildPages(done) {
 
       await grow('deploy --noconfirm --threaded');
     },
-    minifyPages,
+    minifyPages, // Essential
     // eslint-disable-next-line prefer-arrow-callback
-    function sharedPages() {
+    function sharedPages() { // Essential
       // Copy shared pages separated from PageTransformer as they should
       // not be transformed
       return gulp
@@ -364,7 +373,7 @@ function buildPages(done) {
         .pipe(gulp.dest(`${project.paths.PAGES_DEST}/shared`));
     },
     // eslint-disable-next-line prefer-arrow-callback
-    async function copyBuildFiles(done) {
+    async function copyBuildFiles(done) { // Essential (copies manifest, serviceworker, etc.)
       if (!config.options?.locales?.includes(config.getDefaultLocale())) {
         console.log(
           'Skipping page publishing. Default language is not build, only:',
@@ -453,18 +462,18 @@ function buildPages(done) {
 
       done();
     },
-    staticify,
-    renderExamples,
-    optimizeFiles,
+    staticify, // Essential
+    // renderExamples, // Non-essential: newPost is part of it
+    optimizeFiles, // Essential
     // eslint-disable-next-line prefer-arrow-callback
-    function sitemap() {
+    function sitemap() { // Essential (Grow output)
       // Copy XML files written by Grow
       return gulp
         .src(`${project.paths.GROW_BUILD_DEST}/**/*.xml`)
         .pipe(gulp.dest(`${project.paths.PAGES_DEST}`));
     },
     // eslint-disable-next-line prefer-arrow-callback
-    async function packArtifacts() {
+    async function packArtifacts() { // Essential (used by deploy workflow)
       if (!process.env.CI) {
         return;
       }
@@ -476,7 +485,7 @@ function buildPages(done) {
           './dist/static/files/search-promoted-pages'
       );
     },
-    whoAmI
+    whoAmI // Essential
   )(done);
 }
 
@@ -484,7 +493,7 @@ function buildPages(done) {
  * creates a new nunjucks environment for rendering
  *
  */
-function nunjucksEnv() {
+function nunjucksEnv() { // Essential
   const env = new nunjucks.Environment(null, {
     tags: {
       blockStart: '[%',
@@ -500,15 +509,14 @@ function nunjucksEnv() {
     'SupportedFormatsExtension',
     new SupportedFormatsExtension()
   );
-  env.addFilter('importBlog', importBlog, true);
-
-  env.addFilter('importYouTubeChannel', importYouTubeChannel, true);
-  env.addFilter('survey', survey, true);
+  // env.addFilter('importBlog', importBlog, true); // Non-essential: importBlog
+  // env.addFilter('importYouTubeChannel', importYouTubeChannel, true); // Non-essential: importYouTubeChannel
+  // env.addFilter('survey', survey, true); // Non-essential: survey
 
   return env;
 }
 
-function optimizeFiles(cb) {
+function optimizeFiles(cb) { // Essential
   return gulp
     .src([
       `${project.paths.PAGES_DEST}/**/*.html`,
@@ -532,93 +540,93 @@ function optimizeFiles(cb) {
     .on('end', cb);
 }
 
-function newPost(text, img, id) {
-  return {
-    id: id,
-    text: text,
-    img: '/static/samples/img/' + img,
-    timestamp: Number(new Date()),
-  };
-}
+// function newPost(text, img, id) { // Non-essential: newPost
+//   return {
+//     id: id,
+//     text: text,
+//     img: '/static/samples/img/' + img,
+//     timestamp: Number(new Date()),
+//   };
+// }
 
-async function renderExamples(done) {
-  const logger = require('@lib/utils/log')('Static File Generator');
-  const env = nunjucksEnv();
-  const blogItems = [
-    newPost('A green landscape with trees.', 'landscape_green_1280x853.jpg', 1),
-    newPost(
-      'Mountains reflecting on a lake.',
-      'landscape_mountains_1280x657.jpg',
-      2
-    ),
-    newPost(
-      'A road leading to a lake with mountains on the back.',
-      'landscape_lake_1280x857.jpg',
-      3
-    ),
-    newPost(
-      'Forested hills with a grey sky in the background.',
-      'landscape_trees_1280x960.jpg',
-      4
-    ),
-    newPost(
-      'Scattered houses in a mountain village.',
-      'landscape_village_1280x853.jpg',
-      5
-    ),
-    newPost('A deep canyon.', 'landscape_canyon_1280x1700.jpg', 6),
-    newPost(
-      'A desert with mountains in the background.',
-      'landscape_desert_1280x853.jpg',
-      7
-    ),
-    newPost('Colorful houses on a street.', 'landscape_houses_1280x803.jpg', 8),
-    newPost('Blue sea surrounding a cave.', 'landscape_sea_1280x848.jpg', 9),
-    newPost(
-      'A ship sailing the sea at sunset.',
-      'landscape_ship_1280x853.jpg',
-      10
-    ),
-  ];
-
-  const configObj = {
-    time: new Date().toLocaleTimeString(),
-    timestamp: Number(new Date()),
-    // send a random list of blog items to make it also work on the cache
-    blogItems: blogItems.filter(() =>
-      Math.floor(Math.random() * Math.floor(2))
-    ),
-  };
-
-  return gulp
-    .src(`${project.paths.DIST}/examples/sources/**/*.html`)
-    .pipe(
-      through.obj(async (file, enc, callback) => {
-        const srcHTML = file.contents.toString();
-
-        env.renderString(srcHTML, configObj, (err, result) => {
-          if (err) {
-            logger.error(`Error rendering ${file.path}`);
-            return callback(err);
-          }
-
-          file.contents = Buffer.from(result);
-          callback(null, file);
-        });
-      })
-    )
-    .pipe(gulp.dest((f) => f.base))
-    .on('end', () => {
-      done();
-    });
-}
+// async function renderExamples(done) { // Non-essential: renderExamples (uses newPost)
+//   const logger = require('@lib/utils/log')('Static File Generator');
+//   const env = nunjucksEnv();
+//   const blogItems = [
+//     newPost('A green landscape with trees.', 'landscape_green_1280x853.jpg', 1),
+//     newPost(
+//       'Mountains reflecting on a lake.',
+//       'landscape_mountains_1280x657.jpg',
+//       2
+//     ),
+//     newPost(
+//       'A road leading to a lake with mountains on the back.',
+//       'landscape_lake_1280x857.jpg',
+//       3
+//     ),
+//     newPost(
+//       'Forested hills with a grey sky in the background.',
+//       'landscape_trees_1280x960.jpg',
+//       4
+//     ),
+//     newPost(
+//       'Scattered houses in a mountain village.',
+//       'landscape_village_1280x853.jpg',
+//       5
+//     ),
+//     newPost('A deep canyon.', 'landscape_canyon_1280x1700.jpg', 6),
+//     newPost(
+//       'A desert with mountains in the background.',
+//       'landscape_desert_1280x853.jpg',
+//       7
+//     ),
+//     newPost('Colorful houses on a street.', 'landscape_houses_1280x803.jpg', 8),
+//     newPost('Blue sea surrounding a cave.', 'landscape_sea_1280x848.jpg', 9),
+//     newPost(
+//       'A ship sailing the sea at sunset.',
+//       'landscape_ship_1280x853.jpg',
+//       10
+//     ),
+//   ];
+//
+//   const configObj = {
+//     time: new Date().toLocaleTimeString(),
+//     timestamp: Number(new Date()),
+//     // send a random list of blog items to make it also work on the cache
+//     blogItems: blogItems.filter(() =>
+//       Math.floor(Math.random() * Math.floor(2))
+//     ),
+//   };
+//
+//   return gulp
+//     .src(`${project.paths.DIST}/examples/sources/**/*.html`)
+//     .pipe(
+//       through.obj(async (file, enc, callback) => {
+//         const srcHTML = file.contents.toString();
+//
+//         env.renderString(srcHTML, configObj, (err, result) => {
+//           if (err) {
+//             logger.error(`Error rendering ${file.path}`);
+//             return callback(err);
+//           }
+//
+//           file.contents = Buffer.from(result);
+//           callback(null, file);
+//         });
+//       })
+//     )
+//     .pipe(gulp.dest((f) => f.base))
+//     .on('end', () => {
+//       done();
+//     });
+// }
 
 /**
  * Removes unnecessary whitespace from rendered pages and minifies their CSS
  *
  * @return {Promise}
  */
-function minifyPages() {
+function minifyPages() { // Essential
   // Configure CleanCSS to use a more aggressive set of rules to achieve better
   // results
   const cleanCss = new CleanCSS({
@@ -649,7 +657,8 @@ function minifyPages() {
         callback(null, page);
       })
     )
-    .pipe(gulp.dest(`${project.paths.PAGES_DEST}`));
+    .pipe(gulp.dest((f) => f.base))
+    .on('end', cb);
 }
 
 /**
@@ -658,7 +667,7 @@ function minifyPages() {
  *
  * @return {Stream}
  */
-function collectStatics(done) {
+function collectStatics(done) { // Essential
   // Used to keep track of unfinished archives
   const archives = {};
 
@@ -743,7 +752,7 @@ function collectStatics(done) {
  *
  * @return {undefined}
  */
-function persistBuildInfo(done) {
+function persistBuildInfo(done) { // Essential
   const buildInfo = {
     'number': process.env.GITHUB_RUN_ID || null,
     'at': new Date(),
@@ -758,36 +767,36 @@ function persistBuildInfo(done) {
   fs.writeFile(project.paths.BUILD_INFO, yaml.dump(buildInfo), done);
 }
 
-exports.clean = clean;
-exports.sass = sass;
-exports.icons = icons;
-exports.templates = templates;
-exports.importAll = importAll;
-exports.importComponents = importComponents;
-exports.buildPlayground = buildPlayground;
-exports.buildPixi = buildPixi;
-exports.buildBoilerplate = buildBoilerplate;
-exports.buildFrontend = buildFrontend;
-exports.buildSamples = buildSamples;
-exports.zipTemplates = zipTemplates;
-exports.buildPages = buildPages;
-exports.buildPrepare = buildPrepare;
-exports.minifyPages = minifyPages;
-exports.staticify = staticify;
-exports.unpackArtifacts = unpackArtifacts;
-exports.collectStatics = collectStatics;
-exports.whoAmI = whoAmI;
-exports.buildPixiFunctions = buildPixiFunctions;
-exports.buildFinalize = gulp.series(
-  gulp.parallel(collectStatics, persistBuildInfo),
-  thumborImageIndex
+exports.clean = clean; // Essential
+exports.sass = sass; // Essential
+exports.icons = icons; // Essential
+exports.templates = templates; // Essential
+// exports.importAll = importAll; // Non-essential: importAll
+// exports.importComponents = importComponents; // Non-essential: importComponents (depends on ComponentReferenceImporter)
+// exports.buildPlayground = buildPlayground; // Non-essential: playground
+// exports.buildPixi = buildPixi; // Non-essential: pixi
+exports.buildBoilerplate = buildBoilerplate; // Essential
+exports.buildFrontend = buildFrontend; // Essential
+// exports.buildSamples = buildSamples; // Non-essential: samplesBuilder
+exports.zipTemplates = zipTemplates; // Essential
+exports.buildPages = buildPages; // Essential
+exports.buildPrepare = buildPrepare; // Essential
+exports.minifyPages = minifyPages; // Essential
+exports.staticify = staticify; // Essential
+exports.unpackArtifacts = unpackArtifacts; // Essential
+exports.collectStatics = collectStatics; // Essential
+exports.whoAmI = whoAmI; // Essential
+// exports.buildPixiFunctions = buildPixiFunctions; // Non-essential: pixi
+exports.buildFinalize = gulp.series( // Essential
+  gulp.parallel(collectStatics, persistBuildInfo)
+  //  thumborImageIndex, // Non-essential: thumborImageIndex
 );
 
-exports.build = gulp.series(
+exports.build = gulp.series( // Essential
   clean,
   buildPrepare,
   buildPages,
   gulp.parallel(collectStatics, persistBuildInfo)
 );
 
-exports.buildForGrowTests = gulp.series(buildBoilerplate, buildPages);
+exports.buildForGrowTests = gulp.series(buildBoilerplate, buildPages); // Essential

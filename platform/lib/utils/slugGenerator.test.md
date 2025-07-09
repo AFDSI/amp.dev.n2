@@ -1,3 +1,4 @@
+```script
 const SlugGenerator = require('./slugGenerator.js');
 
 test('Test anchor generation', () => {
@@ -18,3 +19,4 @@ test('Test anchor generation', () => {
   expect(slugGenerator.generateSlug('übung  6')).toBe('übung--6');
   expect(slugGenerator.generateSlug(' test_7 ')).toBe('test_7');
 });
+```

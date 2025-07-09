@@ -1,3 +1,4 @@
+```javascript
 jest.mock('node-fetch');
 const fetch = require('node-fetch');
 const {Response} = jest.requireActual('node-fetch');
@@ -150,3 +151,4 @@ test('Fetch error other', () => {
     );
   });
 });
+```

@@ -1,3 +1,4 @@
+```javascript
 const AmpOptimizer = require('@ampproject/toolbox-optimizer');
 
 const HeadDedupTransformer = require('./HeadDedupTransformer.js');
@@ -34,3 +35,4 @@ async function transform(string) {
   });
   return optimizer.transformHtml(string);
 }
+```
