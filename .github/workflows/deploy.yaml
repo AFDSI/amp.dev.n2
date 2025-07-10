@@ -15,7 +15,7 @@ on:
         default: Staging
   push:
     branches:
-      - 'main' # Assuming 'main' is your primary branch for amp.dev.next2
+      - 'main' # Assuming 'main' is your primary branch for amp.dev.n2
       - 'gha-deploy-*'
 
 jobs:
