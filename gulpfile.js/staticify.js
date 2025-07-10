@@ -13,10 +13,12 @@ const {project} = require('@lib/utils');
 // const { // Partitioned: importYouTubeChannel
 //   importYouTubeChannel,
 // } = require('@lib/templates/ImportYouTubeChannel.js');
-const { // Essential
+const {
+  // Essential
   SupportedFormatsExtension,
 } = require('@lib/templates/SupportedFormatsExtension.js');
-const { // Essential
+const {
+  // Essential
   FORMAT_WEBSITES,
   SUPPORTED_FORMATS,
 } = require('@lib/amp/formatHelper.js');
@@ -24,7 +26,8 @@ const {cheerioOptions} = require('../platform/lib/common/cheerioOptions'); // Es
 const coursesPath = '/documentation/courses'; // Essential
 const coursesRegex = new RegExp(`^(.+)(?:${coursesPath})(.*)$`); // Essential
 
-const getUpdatedURL = (u, requestedFormat, forcedFormat) => { // Essential
+const getUpdatedURL = (u, requestedFormat, forcedFormat) => {
+  // Essential
   return u.replace(
     /(.*documentation\/[^/]+)[\/.]([^?]+)?(?:\?(?:[^=]*)=(.*))?/,
     (match, section, page, embeddedQueryFormat) => {
@@ -43,7 +46,8 @@ const getUpdatedURL = (u, requestedFormat, forcedFormat) => { // Essential
  * creates a new nunjucks environment for rendering
  *
  */
-function nunjucksEnv() { // Essential (but filters/extensions might be partitioned)
+function nunjucksEnv() {
+  // Essential (but filters/extensions might be partitioned)
   const env = new nunjucks.Environment(null, {
     tags: {
       blockStart: '[%',
@@ -71,7 +75,8 @@ function nunjucksEnv() { // Essential (but filters/extensions might be partition
  *
  * @return {Promise}
  */
-async function staticify(done) { // Essential
+async function staticify(done) {
+  // Essential
   const logger = require('@lib/utils/log')('Static File Generator'); // Essential
 
   const requestPathRegex = new RegExp( // Essential
@@ -79,7 +84,8 @@ async function staticify(done) { // Essential
     'g'
   );
 
-  const generatedFormats = SUPPORTED_FORMATS.map((format) => { // Essential
+  const generatedFormats = SUPPORTED_FORMATS.map((format) => {
+    // Essential
     const f = (cb) => {
       const env = nunjucksEnv(); // Essential
 
@@ -162,7 +168,8 @@ async function staticify(done) { // Essential
   });
 
   // generatedLevels relies on coursesPath, which is essential
-  const generatedLevels = ['beginner', 'advanced'].map((level) => { // Essential
+  const generatedLevels = ['beginner', 'advanced'].map((level) => {
+    // Essential
     const f = (cb) => {
       const env = nunjucksEnv(); // Essential
 
@@ -292,7 +299,8 @@ async function staticify(done) { // Essential
     .src(`${project.paths.STATICS_DEST}/**/*`)
     .pipe(gulp.dest(() => `${project.paths.PAGES_DEST}/static`));
 
-  return new Promise((resolve, reject) => { // Essential
+  return new Promise((resolve, reject) => {
+    // Essential
     gulp.series(
       gulp.parallel(...generatedLevels),
       gulp.parallel(...generatedFormats),

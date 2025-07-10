@@ -12,7 +12,8 @@ const webSocketServer = require('@examples/socket-server/socket-server');
 const routers = {
   boilerplate: require('../../boilerplate/backend/'), // Essential
   cspReport: require('@lib/routers/cspReport.js'), // Essential
-  example: { // Essential (example router components are part of core functionality)
+  example: {
+    // Essential (example router components are part of core functionality)
     api: require('@examples'),
     embeds: require('@lib/routers/example/embeds.js'),
     sources: require('@lib/routers/example/sources.js'),
@@ -86,7 +87,8 @@ class Platform {
     this._configureErrorHandlers();
   }
 
-  _configureMiddlewares() { // Essential
+  _configureMiddlewares() {
+    // Essential
     this.server.use(require('./middleware/csp.js'));
     this.server.use(require('./middleware/security.js'));
     this.server.use(require('./middleware/redirects.js'));
@@ -174,7 +176,8 @@ class Platform {
     this.server.use(routers.growPages); // Essential
   }
 
-  _configureErrorHandlers() { // Essential
+  _configureErrorHandlers() {
+    // Essential
     // handle errors
     // eslint-disable-next-line no-unused-vars
     this.server.use((err, req, res, next) => {

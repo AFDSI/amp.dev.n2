@@ -28,13 +28,14 @@ const {whoAmI} = require('./whoAmI.js');
 const CleanCSS = require('clean-css');
 // const {PIXI_CLOUD_ROOT} = require('@lib/utils/project').paths; // Non-essential: PIXI_CLOUD_ROOT
 const {copyFile} = require('fs/promises');
-const nunjucks = require('nunjucks');
+// const nunjucks = require('nunjucks'); // Comment out: nunjucksEnv is now unused
 // const {importBlog} = require('@lib/templates/ImportBlogFilter.js'); // Non-essential: importBlog
 // const { // Non-essential: importYouTubeChannel
 //   importYouTubeChannel,
 // } = require('@lib/templates/ImportYouTubeChannel.js');
 // const {survey} = require('@lib/templates/SurveyFilter.js'); // Non-essential: survey
-const { // Essential
+const {
+  // Essential
   SupportedFormatsExtension,
 } = require('@lib/templates/SupportedFormatsExtension.js');
 const {optimize} = require('@lib/utils/ampOptimizer.js'); // Essential
@@ -81,7 +82,6 @@ function clean() {
       project.paths.STATICS_DEST,
       project.absolute('platform/static'),
       // project.absolute('playground/dist'), // Partitioned: playground - already handled above in del
-
     ],
     {'force': true}
   );
@@ -190,7 +190,8 @@ function buildFrontend(done) {
  * Builds the boilerplate generator
  * @return {Promise}
  */
-function buildBoilerplate() { // Essential
+function buildBoilerplate() {
+  // Essential
   return sh('node build.js', {
     workingDir: project.absolute('boilerplate'),
   });
@@ -209,7 +210,8 @@ function buildBoilerplate() { // Essential
 /**
  * Zips templates for download.
  */
-function zipTemplates() { // Essential
+function zipTemplates() {
+  // Essential
   const templateDir = path.join(project.paths.DIST, 'static/files/templates/');
   mkdirp(templateDir);
   return gulp.src(project.paths.TEMPLATES + '/*/*/').pipe(
@@ -240,7 +242,8 @@ function zipTemplates() { // Essential
  *
  * @return {Promise}
  */
-function importAll() { // Essential (but calls will be partitioned)
+function importAll() {
+  // Essential (but calls will be partitioned)
   return Promise.all([
     // new ComponentReferenceImporter().import(), // Non-essential: ComponentReferenceImporter
     // new SpecImporter().import(), // Non-essential: SpecImporter
@@ -266,18 +269,19 @@ function importAll() { // Essential (but calls will be partitioned)
  *
  * @return {undefined}
  */
-function buildPrepare(done) { // Essential
+function buildPrepare(done) {
+  // Essential
   return gulp.series(
     // Build playground and boilerplate that early in the flow as they are
     // fairly quick to build and would be annoying to eventually fail downstream
     // buildSamples, // Non-essential: samplesBuilder
     // --- ADDED STEP: Copy samples.json to expected location --- (Dependent on buildSamples, so comment out)
     // async function copySamplesJson() {
-      // const sourcePath = project.absolute('examples/static/samples/samples.json');
-      // const destPath = path.join(project.paths.STATICS_DEST, 'samples/samples.json');
-      // await mkdirp(path.dirname(destPath)); // Ensure destination directory exists
-      // await copyFile(sourcePath, destPath);
-      // signale.success(`Copied samples.json from ${sourcePath} to ${destPath}`);
+    // const sourcePath = project.absolute('examples/static/samples/samples.json');
+    // const destPath = path.join(project.paths.STATICS_DEST, 'samples/samples.json');
+    // await mkdirp(path.dirname(destPath)); // Ensure destination directory exists
+    // await copyFile(sourcePath, destPath);
+    // signale.success(`Copied samples.json from ${sourcePath} to ${destPath}`);
     // },
     gulp.parallel(
       // buildPlayground, // Non-essential: playground
@@ -287,7 +291,8 @@ function buildPrepare(done) { // Essential
       importAll, // Essential (but its internal calls are partitioned)
       zipTemplates // Essential
     ),
-    async function packArtifacts() { // Essential
+    async () => {
+      // Essential
       // Store everything built so far for later stages to pick up
       // Local path to the archive containing artifacts of the first stage
       const SETUP_ARCHIVE = 'artifacts/setup.tar.gz';
@@ -309,7 +314,8 @@ function buildPrepare(done) { // Essential
       await sh(`tar cfj ${SETUP_ARCHIVE} ${SETUP_STORED_PATHS.join(' ')}`);
     },
     // eslint-disable-next-line prefer-arrow-callback
-    function exit(_done) { // Essential (used by gulp.series)
+    function exit(_done) {
+      // Essential (used by gulp.series)
       done();
       _done();
       process.exit(0);
@@ -322,7 +328,8 @@ function buildPrepare(done) { // Essential
  *
  * @return {Promise}
  */
-function unpackArtifacts() { // Essential
+function unpackArtifacts() {
+  // Essential
   let stream = gulp.src(['artifacts/**/*.tar.gz', 'artifacts/**/*.zip'], {
     'read': false,
   });
@@ -345,12 +352,14 @@ function unpackArtifacts() { // Essential
  *
  * @return {Promise}
  */
-function buildPages(done) { // Essential
+function buildPages(done) {
+  // Essential
   return gulp.series(
     unpackArtifacts, // Essential
     buildFrontend, // Essential
     // eslint-disable-next-line prefer-arrow-callback
-    async function buildGrow() { // Essential (core Grow build)
+    async function buildGrow() {
+      // Essential (core Grow build)
       const options = {};
       if (config.isTestMode()) {
         options.include_paths = TEST_CONTENT_PATH_REGEX;
@@ -365,7 +374,8 @@ function buildPages(done) { // Essential
     },
     minifyPages, // Essential
     // eslint-disable-next-line prefer-arrow-callback
-    function sharedPages() { // Essential
+    function sharedPages() {
+      // Essential
       // Copy shared pages separated from PageTransformer as they should
       // not be transformed
       return gulp
@@ -373,7 +383,8 @@ function buildPages(done) { // Essential
         .pipe(gulp.dest(`${project.paths.PAGES_DEST}/shared`));
     },
     // eslint-disable-next-line prefer-arrow-callback
-    async function copyBuildFiles(done) { // Essential (copies manifest, serviceworker, etc.)
+    async function copyBuildFiles(done) {
+      // Essential (copies manifest, serviceworker, etc.)
       if (!config.options?.locales?.includes(config.getDefaultLocale())) {
         console.log(
           'Skipping page publishing. Default language is not build, only:',
@@ -466,14 +477,16 @@ function buildPages(done) { // Essential
     // renderExamples, // Non-essential: newPost is part of it
     optimizeFiles, // Essential
     // eslint-disable-next-line prefer-arrow-callback
-    function sitemap() { // Essential (Grow output)
+    function sitemap() {
+      // Essential (Grow output)
       // Copy XML files written by Grow
       return gulp
         .src(`${project.paths.GROW_BUILD_DEST}/**/*.xml`)
         .pipe(gulp.dest(`${project.paths.PAGES_DEST}`));
     },
     // eslint-disable-next-line prefer-arrow-callback
-    async function packArtifacts() { // Essential (used by deploy workflow)
+    async function packArtifacts() {
+      // Essential (used by deploy workflow)
       if (!process.env.CI) {
         return;
       }
@@ -493,30 +506,32 @@ function buildPages(done) { // Essential
  * creates a new nunjucks environment for rendering
  *
  */
-function nunjucksEnv() { // Essential
-  const env = new nunjucks.Environment(null, {
-    tags: {
-      blockStart: '[%',
-      blockEnd: '%]',
-      variableStart: '[=',
-      variableEnd: '=]',
-      commentStart: '[[[[#',
-      commentEnd: '#]]]]',
-    },
-  });
+// Comment out nunjucksEnv function definition itself
+// function nunjucksEnv() { // Non-essential: nunjucksEnv (used by renderExamples, which is non-essential)
+//   const env = new nunjucks.Environment(null, {
+//     tags: {
+//       blockStart: '[%',
+//       blockEnd: '%]',
+//       variableStart: '[=',
+//       variableEnd: '=]',
+//       commentStart: '[[[[#',
+//       commentEnd: '#]]]]',
+//     },
+//   });
+//
+//   env.addExtension(
+//     'SupportedFormatsExtension',
+//     new SupportedFormatsExtension()
+//   );
+//   // env.addFilter('importBlog', importBlog, true); // Already commented
+//   // env.addFilter('importYouTubeChannel', importYouTubeChannel, true); // Already commented
+//   // env.addFilter('survey', survey, true); // Already commented
+//
+//   return env;
+// }
 
-  env.addExtension(
-    'SupportedFormatsExtension',
-    new SupportedFormatsExtension()
-  );
-  // env.addFilter('importBlog', importBlog, true); // Non-essential: importBlog
-  // env.addFilter('importYouTubeChannel', importYouTubeChannel, true); // Non-essential: importYouTubeChannel
-  // env.addFilter('survey', survey, true); // Non-essential: survey
-
-  return env;
-}
-
-function optimizeFiles(cb) { // Essential
+function optimizeFiles(cb) {
+  // Essential
   return gulp
     .src([
       `${project.paths.PAGES_DEST}/**/*.html`,
@@ -626,7 +641,8 @@ function optimizeFiles(cb) { // Essential
  *
  * @return {Promise}
  */
-function minifyPages() { // Essential
+function minifyPages() {
+  // Essential
   // Configure CleanCSS to use a more aggressive set of rules to achieve better
   // results
   const cleanCss = new CleanCSS({
@@ -667,7 +683,8 @@ function minifyPages() { // Essential
  *
  * @return {Stream}
  */
-function collectStatics(done) { // Essential
+function collectStatics(done) {
+  // Essential
   // Used to keep track of unfinished archives
   const archives = {};
 
@@ -752,7 +769,8 @@ function collectStatics(done) { // Essential
  *
  * @return {undefined}
  */
-function persistBuildInfo(done) { // Essential
+function persistBuildInfo(done) {
+  // Essential
   const buildInfo = {
     'number': process.env.GITHUB_RUN_ID || null,
     'at': new Date(),
@@ -787,12 +805,14 @@ exports.unpackArtifacts = unpackArtifacts; // Essential
 exports.collectStatics = collectStatics; // Essential
 exports.whoAmI = whoAmI; // Essential
 // exports.buildPixiFunctions = buildPixiFunctions; // Non-essential: pixi
-exports.buildFinalize = gulp.series( // Essential
+exports.buildFinalize = gulp.series(
+  // Essential
   gulp.parallel(collectStatics, persistBuildInfo)
   //  thumborImageIndex, // Non-essential: thumborImageIndex
 );
 
-exports.build = gulp.series( // Essential
+exports.build = gulp.series(
+  // Essential
   clean,
   buildPrepare,
   buildPages,
