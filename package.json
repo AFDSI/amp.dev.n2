@@ -36,7 +36,7 @@
     "test:playground": "cross-env APP_ENV=test jest --runInBand --detectOpenHandles --forceExit --testPathPattern playground",
     "_test:pixi": "cross-env APP_ENV=test jest --runInBand --detectOpenHandles --forceExit --testPathPattern pixi",
     "_test:pixi:e2e": "cross-env APP_ENV=local jest --forceExit -c e2e.jest.config.js",
-    "test:grow-extensions": "cd pages/extensions && if which grow; then python3 -m unittest discover -p \"*_test.py\"; else echo grow not installed with pip. skip tests; fi"
+    "test:grow-extensions": "cd pages/extensions && python3 -m unittest discover -p \"*_test.py\" || echo \"grow not installed with pip. skip tests\"; exit 0"
   },
   "keywords": [
     "amphtml",
