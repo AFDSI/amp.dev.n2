@@ -106,11 +106,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            platform/cache # This is a common cache directory for amp.dev's importer
-            platform/tmp   # Another potential cache/temp directory
-          key: ${{ runner.os }}-importer-cache-${{ hashFiles('package.json') }} # Use package.json for cache key
+            platform/cache
+            platform/tmp
+          key: ${{ runner.os }}-importer-cache-v2-${{ github.run_id }} # Changed key to force a cache miss
           restore-keys: |
-            ${{ runner.os }}-importer-cache-
+            ${{ runner.os }}-importer-cache-v2-
+            ${{ runner.os }}-importer-cache- # Keep old key for restoration attempt
 
       - name: Preparing build
         env:
