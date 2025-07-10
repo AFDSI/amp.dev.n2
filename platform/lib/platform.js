@@ -6,7 +6,7 @@ const ampCors = require('@ampproject/toolbox-cors');
 const config = require('./config.js');
 const {pagePath} = require('@lib/utils/project');
 const log = require('@lib/utils/log')('Platform');
-const subdomain = require('./middleware/subdomain.js');
+// const subdomain = require('./middleware/subdomain.js');
 const webSocketServer = require('@examples/socket-server/socket-server');
 
 const routers = {

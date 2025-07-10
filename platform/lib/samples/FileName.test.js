@@ -38,6 +38,12 @@ describe('FileName', () => {
       expect(FileName.fromString(undefined)).toEqual('');
     });
     it('Adds path', () => {
+      // Normalize the received path to use forward slashes for comparison
+      expect(FileName.fromString('hello', 'world').replace(/\\/g, '/')).toEqual(
+        'hello/world.html'
+      );
+    });
+    it('Adds path', () => {
       expect(FileName.fromString('hello', 'world')).toEqual('hello/world.html');
     });
   });

@@ -34,10 +34,10 @@ const {copyFile} = require('fs/promises');
 //   importYouTubeChannel,
 // } = require('@lib/templates/ImportYouTubeChannel.js');
 // const {survey} = require('@lib/templates/SurveyFilter.js'); // Non-essential: survey
-const {
-  // Essential
-  SupportedFormatsExtension,
-} = require('@lib/templates/SupportedFormatsExtension.js');
+// const {survey} = require('@lib/templates/SurveyFilter.js'); // Already commented
+// const { // Non-essential: SupportedFormatsExtension is used by nunjucksEnv, which is non-essential
+//   SupportedFormatsExtension,
+// } = require('@lib/templates/SupportedFormatsExtension.js');
 const {optimize} = require('@lib/utils/ampOptimizer.js'); // Essential
 const toml = require('@iarna/toml'); // Essential
 

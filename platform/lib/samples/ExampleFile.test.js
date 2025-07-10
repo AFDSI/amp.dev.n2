@@ -46,6 +46,15 @@ describe('ExampleFile', () => {
 
   describe('nextFile', () => {
     const TEST_DIR = __dirname + '/FileNameTestFiles/';
+
+    it('returns next file in alphabetical order', () => {
+      // Normalize the received path to use forward slashes for comparison
+      expect(
+        ExampleFile.fromPath(TEST_DIR + 'a.html')
+          .nextFile()
+          .filePath.replace(/\\/g, '/')
+      ).toEqual(TEST_DIR + 'b.html');
+    });
     it('returns next file in alphabetical order', () => {
       expect(
         ExampleFile.fromPath(TEST_DIR + 'a.html').nextFile().filePath
