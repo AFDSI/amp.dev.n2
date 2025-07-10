@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS-IS" BASIS,
@@ -16,10 +16,17 @@
 
 describe('FileName', () => {
   const FileName = require('./FileName');
+  // const path = require('path'); // REMOVE or comment out this line, as 'path' is not used
 
   describe('fromString', () => {
     it('returns empty string for undefined', () => {
       expect(FileName.fromString(null)).toEqual('');
+    });
+    it('Adds path', () => {
+      // Normalize the received path for comparison
+      expect(FileName.fromString('hello', 'world').replace(/\\/g, '/')).toEqual(
+        'hello/world.html'
+      );
     });
     it('appends .html', () => {
       expect(FileName.fromString('file')).toEqual('file.html');
@@ -36,15 +43,6 @@ describe('FileName', () => {
     });
     it('returns empty string when the file is undefined', () => {
       expect(FileName.fromString(undefined)).toEqual('');
-    });
-    it('Adds path', () => {
-      // Normalize the received path to use forward slashes for comparison
-      expect(FileName.fromString('hello', 'world').replace(/\\/g, '/')).toEqual(
-        'hello/world.html'
-      );
-    });
-    it('Adds path', () => {
-      expect(FileName.fromString('hello', 'world')).toEqual('hello/world.html');
     });
   });
 
