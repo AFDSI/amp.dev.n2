@@ -289,7 +289,8 @@ function buildPrepare(done) {
       // buildPixi, // Non-essential: pixi
       buildFrontend21, // Essential
       importAll, // Essential (but its internal calls are partitioned)
-      zipTemplates // Essential
+      zipTemplates, // Essential
+      persistBuildInfo // ADD THIS LINE: Generate build-info.yaml here
     ),
     async () => {
       // Essential

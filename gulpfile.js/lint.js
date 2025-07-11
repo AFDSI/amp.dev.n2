@@ -17,9 +17,8 @@ function lintNode() {
 }
 
 function lintYaml() {
-  // This now calls a gulp task, so it doesn't need its own direct YAML/through/log imports
-  return sh('bash.exe -c "npx gulp lintYaml"', {
-    // Using bash.exe explicitly
+  // Directly call 'npx gulp lintYaml' without explicitly invoking bash.exe
+  return sh('npx gulp lintYaml', {
     env: process.env,
   });
 }
