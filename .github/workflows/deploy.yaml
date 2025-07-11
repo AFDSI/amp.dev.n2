@@ -123,8 +123,10 @@ jobs:
       # --- ADD DEBUG STEP 1: Verify build-info.yaml after buildPrepare ---
       - name: Verify build-info.yaml after buildPrepare
         run: |
-          ls -l platform/config/build-info.yaml
-          cat platform/config/build-info.yaml # Print its content
+          echo "Listing platform/config directory:"
+          ls -l platform/config/
+          echo "Attempting to cat build-info.yaml:"
+          cat platform/config/build-info.yaml || echo "build-info.yaml not found or empty"
       # -----------------------------------------------------------------
 
       # --- DEBUG STEP: List dist/static/samples after buildPrepare ---
@@ -141,8 +143,12 @@ jobs:
       # --- ADD DEBUG STEP 2: Verify artifact contents after upload ---
       - name: Verify artifact contents after upload
         run: |
-          ls -l artifacts/setup.tar.gz # Confirm the tarball exists
-          tar -tf artifacts/setup.tar.gz # List contents of the tarball
+          echo "Listing artifacts directory before tarball check:"
+          ls -l artifacts/
+          echo "Confirming setup.tar.gz exists:"
+          ls -l artifacts/setup.tar.gz || echo "setup.tar.gz not found"
+          echo "Listing contents of setup.tar.gz:"
+          tar -tf artifacts/setup.tar.gz || echo "Failed to list tarball contents"
       # -------------------------------------------------------------
 
       # --- DEBUG STEP: List artifacts directory after upload ---
