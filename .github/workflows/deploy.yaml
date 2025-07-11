@@ -120,6 +120,13 @@ jobs:
         run: |
           npx gulp buildPrepare
 
+      # --- ADD DEBUG STEP 1: Verify build-info.yaml after buildPrepare ---
+      - name: Verify build-info.yaml after buildPrepare
+        run: |
+          ls -l platform/config/build-info.yaml
+          cat platform/config/build-info.yaml # Print its content
+      # -----------------------------------------------------------------
+
       # --- DEBUG STEP: List dist/static/samples after buildPrepare ---
       - name: List dist/static/samples after buildPrepare
         run: ls -R dist/static/samples/
@@ -130,6 +137,13 @@ jobs:
         with:
           name: build-setup
           path: artifacts/setup.tar.gz
+
+      # --- ADD DEBUG STEP 2: Verify artifact contents after upload ---
+      - name: Verify artifact contents after upload
+        run: |
+          ls -l artifacts/setup.tar.gz # Confirm the tarball exists
+          tar -tf artifacts/setup.tar.gz # List contents of the tarball
+      # -------------------------------------------------------------
 
       # --- DEBUG STEP: List artifacts directory after upload ---
       - name: List artifacts directory after upload
