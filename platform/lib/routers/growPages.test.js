@@ -1,6 +1,6 @@
 // platform/lib/routers/growPages.test.js
 
-const growPages = require('./growPages'); // This now imports the default export
+const {growPages} = require('./growPages'); // CORRECTED: Use destructuring for named export
 const express = require('express');
 const request = require('supertest');
 // const fs = require('fs'); // Removed: 'fs' is not directly used, accessed via jest.requireActual
