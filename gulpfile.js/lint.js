@@ -10,9 +10,9 @@ const growReferenceChecker = require('@lib/tools/growReferenceChecker');
 const log = require('@lib/utils/log')('Linter');
 
 function lintNode() {
-  // Use npx eslint directly to avoid issues with npm in sub-processes
-  return sh('npx eslint "**/*.js"', {
-    // Changed to npx eslint and added env
+  // Use the direct path to the local eslint binary to avoid PATH issues with npx/npm
+  return sh('node_modules/.bin/eslint "**/*.js"', {
+    // CORRECTED: Direct path to eslint binary
     env: process.env, // Ensure environment variables are inherited
   });
 }
