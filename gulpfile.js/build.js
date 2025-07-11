@@ -771,7 +771,8 @@ function collectStatics(done) {
  *
  * @return {undefined}
  */
-function persistBuildInfo(done) {
+function persistBuildInfo() {
+  // Removed 'done' parameter
   // Essential
   const buildInfo = {
     'number': process.env.GITHUB_RUN_ID || null,
@@ -783,10 +784,21 @@ function persistBuildInfo(done) {
       'message': git.message(),
     },
   };
+
   // Ensure the directory exists before writing the file
   mkdirp(path.dirname(project.paths.BUILD_INFO));
 
-  fs.writeFile(project.paths.BUILD_INFO, yaml.dump(buildInfo), done);
+  return new Promise((resolve, reject) => {
+    // Wrap fs.writeFile in a Promise
+    fs.writeFile(project.paths.BUILD_INFO, yaml.dump(buildInfo), (err) => {
+      if (err) {
+        signale.fatal('Failed to write build info file', err);
+        return reject(err);
+      }
+      signale.success('Wrote build info file.');
+      resolve();
+    });
+  });
 }
 
 exports.clean = clean; // Essential
