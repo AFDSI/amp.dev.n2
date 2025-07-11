@@ -783,6 +783,8 @@ function persistBuildInfo(done) {
       'message': git.message(),
     },
   };
+  // Ensure the directory exists before writing the file
+  mkdirp(path.dirname(project.paths.BUILD_INFO));
 
   fs.writeFile(project.paths.BUILD_INFO, yaml.dump(buildInfo), done);
 }
