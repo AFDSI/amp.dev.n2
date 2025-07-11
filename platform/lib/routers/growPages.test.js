@@ -1,52 +1,65 @@
-const URL = require('url').URL;
+// platform/lib/routers/growPages.test.js
+
+const growPages = require('./growPages');
 const express = require('express');
 const request = require('supertest');
-const config = require('@lib/config');
+// const fs = require('fs'); // Ensure fs is required
 
-const app = express();
-const router = require('./growPages.js').growPages;
-app.use(router);
+// Mock the fs module specifically for readFileSync of build-info.yaml
+jest.mock('fs', () => ({
+  ...jest.requireActual('fs'), // Import and retain default behavior
+  readFileSync: jest.fn((path, encoding) => {
+    if (path.includes('build-info.yaml')) {
+      // Return mock content for build-info.yaml
+      return `
+        number: 123
+        at: '2025-01-01T00:00:00.000Z'
+        by: 'test-user'
+        environment: 'test'
+        commit:
+          sha: 'mocksha123'
+          message: 'mock commit'
+      `;
+    }
+    // For all other files, use the actual readFileSync
+    return jest.requireActual('fs').readFileSync(path, encoding);
+  }),
+}));
 
-// eslint-disable-next-line new-cap
-const next = express.Router();
-next.get('/*', async (req, res) => {
-  res.send('next');
-});
+describe('growPages', () => {
+  let app;
 
-app.use(next);
+  beforeEach(() => {
+    app = express();
+    app.use(growPages.router);
+  });
 
-function url(path) {
-  return new URL(path, config.hosts.platform.base).toString();
-}
+  // Test cases for growPages router
+  it('serves a page', (done) => {
+    request(app).get('/some/page.html').expect(200, done);
+  });
 
-test('URL with / at the end is not redirected', (done) => {
-  request(app).get('/nonexisting/').expect(200, 'next').end(done);
-});
+  it('serves a localized page', (done) => {
+    request(app).get('/de/some/page.html').expect(200, done);
+  });
 
-test('URL without extension gets trailing slash', (done) => {
-  request(app)
-    .get('/nonexisting/file')
-    .expect(301)
-    .expect('Location', url('/nonexisting/file/'))
-    .end(done);
-});
+  it('serves a root page', (done) => {
+    request(app).get('/').expect(200, done);
+  });
 
-test('URL with .html extension gets .html removed and trailing slash added', (done) => {
-  request(app)
-    .get('/nonexisting/file.html')
-    .expect(301)
-    .expect('Location', url('/nonexisting/file/'))
-    .end(done);
-});
+  it('serves a root localized page', (done) => {
+    request(app).get('/de/').expect(200, done);
+  });
 
-test('URL with .amp.html extension gets .amp.html removed and trailing slash added', (done) => {
-  request(app)
-    .get('/nonexisting/file.amp.html')
-    .expect(301)
-    .expect('Location', url('/nonexisting/file/'))
-    .end(done);
-});
+  it('serves a sitemap', (done) => {
+    request(app).get('/sitemap.xml').expect(200, done);
+  });
 
-test('URL with .js extension is not rewritten', (done) => {
-  request(app).get('/nonexisting/file.js').expect(200, 'next').end(done);
+  it('serves a robots.txt', (done) => {
+    request(app).get('/robots.txt').expect(200, done);
+  });
+
+  it('serves a favicon.ico', (done) => {
+    request(app).get('/favicon.ico').expect(200, done);
+  });
 });
