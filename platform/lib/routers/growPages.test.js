@@ -1,9 +1,9 @@
 // platform/lib/routers/growPages.test.js
 
-const growPages = require('./growPages');
+const growPages = require('./growPages'); // This now imports the default export
 const express = require('express');
 const request = require('supertest');
-// const fs = require('fs'); // Ensure fs is required
+// const fs = require('fs'); // Removed: 'fs' is not directly used, accessed via jest.requireActual
 
 // Mock the fs module specifically for readFileSync of build-info.yaml
 jest.mock('fs', () => ({
@@ -31,7 +31,8 @@ describe('growPages', () => {
 
   beforeEach(() => {
     app = express();
-    app.use(growPages.router);
+    // Change this line to directly use the imported growPages module as the router
+    app.use(growPages); // CORRECTED: Assumes growPages.js exports the router directly
   });
 
   // Test cases for growPages router
